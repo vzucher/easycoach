@@ -1,0 +1,124 @@
+# EasyCoach Project - Git Ignore File
+
+# =====================================
+# 🔧 Backend (PHP/CodeIgniter 4)
+# =====================================
+backend/vendor/
+backend/composer.lock
+backend/.env
+backend/.env.*
+backend/writable/logs/*.log
+backend/writable/cache/*
+backend/writable/session/*
+backend/writable/uploads/*
+backend/writable/debugbar/*
+!backend/writable/logs/.gitkeep
+!backend/writable/cache/.gitkeep
+!backend/writable/session/.gitkeep
+!backend/writable/uploads/.gitkeep
+
+# =====================================
+# 🎨 Frontend (React/Node.js)
+# =====================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml
+frontend/.env
+frontend/.env.*
+
+# =====================================
+# 🐳 Docker & Database
+# =====================================
+.docker/
+docker-compose.override.yml
+.env.docker
+*.sql.backup
+db_data/
+mysql_data/
+
+# =====================================
+# 🔨 Build & Dependencies
+# =====================================
+*.log
+*.tmp
+*.temp
+coverage/
+.nyc_output/
+.coverage/
+
+# =====================================
+# 💻 IDEs & Editors
+# =====================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =====================================
+# 🖥️ System Files
+# =====================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.pid
+*.seed
+*.pid.lock
+
+# =====================================
+# 📊 Testing & Reports
+# =====================================
+phpunit.xml
+.phpunit.result.cache
+coverage.xml
+coverage/
+test-results/
+junit.xml
+
+# =====================================
+# 🚀 Deployment & CI
+# =====================================
+.github/workflows/*.yml
+!.github/workflows/example.yml
+deploy.sh
+.deployment/
+
+# =====================================
+# 📝 Documentation
+# =====================================
+docs/build/
+*.pdf
+*.doc
+*.docx
+
+# =====================================
+# 🔐 Security & Credentials
+# =====================================
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+credentials/
+.secrets
+.aws/
+.ssh/
+
+# =====================================
+# 🎯 Keep These Important Files
+# =====================================
+!.gitkeep
+!.gitignore
+!.dockerignore
+!README.md
+!docker-compose.yml 

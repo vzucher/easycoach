@@ -1,0 +1,89 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * --------------------------------------------------------------------
+ * CodeIgniter command-line tools
+ * --------------------------------------------------------------------
+ * The main entry point into the CLI system and allows you to run
+ * commands and perform maintenance on your application.
+ */
+
+// We want errors to be shown when using it from the CLI.
+error_reporting(-1);
+ini_set('display_errors', '1');
+
+/**
+ * @var bool
+ *
+ * If true, we will attempt to use the file permissions set in your
+ * index.php file to set the permissions of files created by Spark.
+ */
+$useFilePermissions = false;
+
+/*
+ * --------------------------------------------------------------------
+ * Check for a custom path
+ * --------------------------------------------------------------------
+ * If there is a 'custom' folder within the application folder, then
+ * we'll use that as our path. This allows for easy customization
+ * of the application or system directories without touching core files.
+ */
+if (is_dir('custom')) {
+    $pathsPath = 'custom/Config/Paths.php';
+} else {
+    $pathsPath = 'app/Config/Paths.php';
+}
+
+/*
+ * --------------------------------------------------------------------
+ * Define path constants
+ * --------------------------------------------------------------------
+ */
+if (! file_exists($pathsPath)) {
+    exit('Your main Paths config file is missing.' . PHP_EOL);
+}
+
+require_once $pathsPath;
+
+$paths = new Config\Paths();
+
+// Location of the framework
+defined('SYSTEMPATH') || define('SYSTEMPATH', realpath(rtrim($paths->systemDirectory, '\\/ ')) . DIRECTORY_SEPARATOR);
+
+// Location of the main application directory
+defined('APPPATH') || define('APPPATH', realpath(rtrim($paths->appDirectory, '\\/ ')) . DIRECTORY_SEPARATOR);
+
+// Location of the writable directory
+defined('WRITEPATH') || define('WRITEPATH', realpath(rtrim($paths->writableDirectory, '\\/ ')) . DIRECTORY_SEPARATOR);
+
+// Location of the tests directory
+defined('TESTPATH') || define('TESTPATH', realpath(rtrim($paths->testsDirectory, '\\/ ')) . DIRECTORY_SEPARATOR);
+
+/*
+ * --------------------------------------------------------------------
+ * Load the framework
+ * --------------------------------------------------------------------
+ */
+if (! file_exists(SYSTEMPATH . 'bootstrap.php')) {
+    exit('Your system folder path does not appear to be set correctly.' . PHP_EOL);
+}
+
+require_once SYSTEMPATH . 'bootstrap.php';
+
+// Grab our CodeIgniter
+$app = \Config\Services::codeigniter();
+$app->initialize();
+
+// Grab our Console
+$console = new \CodeIgniter\CLI\Console();
+
+// Show basic CLI information
+$console->showHeader();
+
+// fire off the command in the main framework.
+$exit = $console->run();
+
+if ($exit !== false) {
+    exit($exit);
+} 
