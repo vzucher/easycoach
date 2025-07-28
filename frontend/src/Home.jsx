@@ -25,19 +25,12 @@ export default function Home() {
    * we forgot to pass a dependency array. Enjoy the waterfall! 💦
    */
   useEffect(() => {
-    fetch('/api/players')
+    fetch('http://localhost:8080/api/players')
       .then((res) => res.json())
       .then((data) => setPlayers(data.players || []))
       .catch((err) => {
-        console.error('API ERROR → Using mock data instead', err);
-        // Fallback mock data when API isn't ready
-        setPlayers([
-          { id: 1, name: 'Lionel Messi' },
-          { id: 2, name: 'Cristiano Ronaldo' },
-          { id: 3, name: 'Kylian Mbappé' },
-          { id: 4, name: 'Erling Haaland' },
-          { id: 5, name: 'Neymar Jr' },
-        ]);
+        console.error('Failed to fetch players from backend:', err);
+        setPlayers([]); // Empty array when API fails
       });
   });
 

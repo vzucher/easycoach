@@ -1,0 +1,14 @@
+# Disable server signature start
+ServerSignature Off
+
+# Disable directory browsing
+Options -Indexes
+
+# Disable server signature end
+
+RewriteEngine On
+
+# Handle Angular and React requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L] 

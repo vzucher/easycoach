@@ -2,16 +2,15 @@ version: "3.9"
 
 services:
   app:
-    image: php:8.3-fpm-alpine
+    image: php:8.3-cli-alpine
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
     command: >
-      sh -c "apk add --no-cache git sqlite icu-dev && \
-             docker-php-ext-install intl && \
+      sh -c "apk add --no-cache git sqlite && \
              curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
-             composer install && \
-             php spark serve --host 0.0.0.0 --port 8080"
+             composer install --ignore-platform-req=ext-intl && \
+             php -S 0.0.0.0:8080 -t public"
     ports: [ "8080:8080" ]
 
   node:
