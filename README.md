@@ -1,4 +1,4 @@
-# EasyCoach · "Players & Sessions" Challenge 🚀
+# ⚽️ EasyCoach Challenge
 _Full-stack developer technical assessment_
 
 ---
@@ -8,7 +8,7 @@ _Full-stack developer technical assessment_
 A **"Players & Sessions" module** for EasyCoach.Club - list players with pagination, search, and training load visualization.
 
 **Time limit**: 5 hours ⏱️  
-**Tech stack**: PHP 8.3 + CodeIgniter 4 + React 18 + Vite + MariaDB  
+**Tech stack**: PHP 8.3 + SQLite + React 18 + Vite + Tailwind CSS  
 
 ---
 
@@ -18,17 +18,18 @@ A **"Players & Sessions" module** for EasyCoach.Club - list players with paginat
 easycoach/
 ├── 🔧 docker-compose.yml       # Zero-install dev environment
 ├── 📊 seed/
-│   ├── hello.db                # SQLite dataset (10k players, 40k sessions)  
-│   └── migrate.sql             # Sample DDL to adapt
-├── 🖥️ backend/                 # CodeIgniter 4 API
+│   └── hello.db                # SQLite dataset (100 players)  
+├── 🖥️ backend/                 # PHP API (simplified for rapid development)
 │   ├── app/
-│   │   └── PlayerController.php # Your API endpoints go here
+│   │   └── Controllers/        # API controllers
 │   ├── public/
+│   │   ├── index.php          # API entry point
+│   │   └── api.php            # Standalone API logic
 │   └── composer.json
 ├── 🎨 frontend/                # React 18 + Vite app
 │   ├── src/
 │   │   ├── components/         # Extract components here
-│   │   └── Home.jsx           # 420 LOC monolith to refactor  
+│   │   └── Home.jsx           # 199 LOC monolith to refactor  
 │   └── package.json
 └── 📈 bin/
     └── benchmark.php          # Performance testing script
@@ -44,76 +45,106 @@ easycoach/
 # Start all services (backend, frontend, database)
 docker compose up -d
 
-# Wait ~2 minutes for backend to install PHP extensions
+# Wait ~30 seconds for services to start
 # Then open:
 open http://localhost:5173    # 🎨 React frontend
-open http://localhost:8080    # 🔧 CodeIgniter API
+open http://localhost:8080    # 🔧 PHP API
 ```
 
 **Services running:**
-- 🎨 **Frontend**: http://localhost:5173 (React + Vite)
-- 🔧 **Backend**: http://localhost:8080 (PHP + CodeIgniter)  
-- 🗄️ **Database**: localhost:3306 (MariaDB, user: `root`, password: `root`)
+- 🎨 **Frontend**: http://localhost:5173 (React + Vite + Tailwind)
+- 🔧 **Backend**: http://localhost:8080 (PHP + SQLite)  
+- 🗄️ **Database**: SQLite file at `seed/hello.db`
 
-### 2. Alternative: Local development
+### 2. Test API endpoints
 
 ```bash
-# Backend
-brew install php composer
-cd backend && composer install && php spark serve
+# List all players (⚠️ currently returns all 100 at once!)
+curl http://localhost:8080/api/players
 
-# Frontend  
-cd frontend && npm install && npm run dev
+# Search players
+curl "http://localhost:8080/api/players?search=messi"
+
+# Health check
+curl http://localhost:8080/api/health
 ```
 
 ---
 
 ## 🔧 Backend Challenge (60% of score)
 
-### Your Mission:
-1. **📊 Database Migration**
-   - Import `seed/hello.db` into MariaDB
-   - Add primary keys + indexes for **≤50ms queries** on 10k rows
+### 🚨 **Current Performance Issues to Fix:**
 
-2. **🛠️ Build API Endpoints**
+The backend currently has **intentional performance problems**:
+
+1. **🚫 No Pagination**: API returns all 100 players at once
+2. **💾 Inefficient Queries**: No database optimization
+3. **⚠️ Poor Architecture**: Monolithic API file instead of proper MVC
+
+### Your Mission:
+
+1. **🛠️ Implement Proper Pagination**
    | Method | Route | Description |
    |--------|-------|-------------|
-   | `GET /api/players` | List players | Pagination, search by name, sort by created_at |
-   | `GET /api/players/{id}` | Player details | + last 30 days stats (distance, speed, sessions) |
-   | `GET /api/players/{id}/sessions` | Player sessions | Paginated, filter by date range |
+   | `GET /api/players` | List players | Add `?page=1&perPage=10` support |
+   | `GET /api/players/{id}` | Player details | Individual player with stats |
+   | `GET /api/players/{id}/sessions` | Player sessions | Mock session data with pagination |
 
-3. **📈 Performance Proof**
-   - Implement `bin/benchmark.php` 
-   - Test `/api/players?page=1&perPage=50`
-   - Report mean & 95th percentile latency
+2. **📈 Optimize Database Queries**
+   - Add proper SQLite indexes for fast queries
+   - Implement efficient pagination with `LIMIT` and `OFFSET`
+   - Add search optimization for name filtering
 
-4. **🏗️ Clean Architecture**
-   - Use CodeIgniter 4: Models, Repositories, Migrations, Seeders
-   - PSR-12 coding standards
-   - At least one PHPUnit test
+3. **🏗️ Improve Architecture**
+   - Refactor monolithic `api.php` into proper MVC structure
+   - Separate database logic from API logic  
+   - Add proper error handling and validation
+   - Optional: Migrate to full CodeIgniter 4 structure
+
+4. **📊 Performance Benchmarking**
+   - Measure query performance before/after optimization
+   - Test with different page sizes and search queries
+   - Document improvements in README
 
 ---
 
 ## 🎨 Frontend Challenge (40% of score)
 
+### 🚨 **Current Performance Issues to Fix:**
+
+The frontend currently has **intentional React problems**:
+
+1. **🔄 Infinite Re-renders**: `useEffect` with no dependency array
+2. **⚡ Heavy Filtering**: Unoptimized search on every keystroke  
+3. **🖼️ Monolithic Component**: 199-line `Home.jsx` doing everything
+4. **💾 No Memoization**: Expensive operations on every render
+
 ### Your Mission:
-1. **♻️ Refactor the 420-line `Home.jsx`**
+
+1. **♻️ Refactor the Monolithic `Home.jsx`**
    - Break into reusable components:
-     - `PlayerTable` 
-     - `LoadChart`
+     - `PlayerTable` or `PlayerList`
+     - `SearchBar` 
      - `PaginationControls`
-   - Switch from mock data to real API calls
+   - Fix the infinite re-render issues
+   - Optimize filtering with `useMemo`
 
-2. **✨ UX Requirements**
-   - ✅ Pagination OR infinite scroll
-   - ⏳ Loading states  
-   - ❌ Error handling
-   - 📱 Responsive design
-   - Use: MUI, Mantine, or Tailwind CSS
+2. **🔗 Integrate Real API Pagination**
+   - Remove mock data fallback
+   - Implement proper pagination controls
+   - Add loading states for API calls
+   - Handle API errors gracefully
 
-3. **🌟 Extra Credit**
+3. **✨ UX Requirements**
+   - ✅ Working pagination with backend
+   - ⏳ Loading spinners during API calls
+   - ❌ Error boundaries and user-friendly error messages
+   - 📱 Responsive design (already has Tailwind CSS)
+
+4. **🌟 Extra Credit**
    - 🔍 Debounced search (300ms delay)
-   - 📊 Last 7 days distance spark-line chart
+   - ♾️ Infinite scroll as alternative to pagination
+   - 📊 Player statistics visualization
 
 ---
 
@@ -122,26 +153,26 @@ cd frontend && npm install && npm run dev
 ### ✅ What Success Looks Like:
 
 **Backend (60%)**:
-- ✅ All 3 API endpoints working
-- ✅ Database properly indexed (≤50ms queries)
-- ✅ Performance benchmark results included
-- ✅ Clean, tested code architecture
+- ✅ Pagination implemented (`?page=1&perPage=10`)
+- ✅ Database queries optimized (< 50ms response time)
+- ✅ API architecture improved (separated concerns)
+- ✅ Search functionality working efficiently
 
 **Frontend (40%)**:
 - ✅ `Home.jsx` split into 3+ components  
-- ✅ Real API integration (no mock data)
-- ✅ Smooth pagination/infinite scroll
+- ✅ React performance issues fixed (no infinite renders)
+- ✅ Real pagination working with backend API
 - ✅ Professional loading/error states
 
 ### 📦 Deliverables:
 
 1. **📤 GitHub repo** with:
-   - All source code
-   - Updated README with setup instructions
-   - Database migration files
-   - Benchmark results pasted in README
+   - All optimized source code
+   - Updated README with your changes
+   - Performance improvements documented
+   - Before/after API response time comparisons
 
-2. **📹 Optional**: 2-minute demo video
+2. **📹 Optional**: 2-minute demo video showing improvements
 
 **⏰ Deadline**: Push within 5 hours of starting
 
@@ -151,12 +182,11 @@ cd frontend && npm install && npm run dev
 
 | Area | Weight | Focus |
 |------|--------|-------|
-| 💻 **Code Quality** | 30% | Clean, readable, well-structured |
-| ⚡ **Performance** | 20% | Fast queries, proper indexing |
-| 🏗️ **Architecture** | 20% | Component separation, API design |
-| ✅ **Testing & Docs** | 15% | Tests, clear documentation |
-| ✨ **UX Polish** | 10% | Smooth interactions, error handling |
-| 🌟 **Extra Credit** | 5% | Search, charts, bonus features |
+| 💻 **Code Quality** | 30% | Clean, readable, well-structured code |
+| ⚡ **Performance** | 25% | Fixed pagination, optimized queries, React performance |
+| 🏗️ **Architecture** | 20% | Component separation, API structure |
+| ✅ **Functionality** | 15% | Working pagination, search, error handling |
+| ✨ **UX Polish** | 10% | Smooth interactions, loading states |
 
 **Passing score**: ≥ 70/100
 
@@ -164,11 +194,23 @@ cd frontend && npm install && npm run dev
 
 ## 🛠️ Development Tips
 
-- 🎯 **Focus on working code** over perfect architecture
-- 📚 **Document your decisions** and shortcuts
-- 🧪 **Test your API endpoints** manually first
-- 📱 **Mobile-first** responsive design
-- ⚡ **Performance matters** - use proper indexes!
+- 🎯 **Start with pagination** - biggest performance win
+- 🔍 **Fix React re-renders** - check that `useEffect` dependency array
+- 📊 **Measure performance** - use browser DevTools Network tab
+- 🧪 **Test edge cases** - empty search results, API errors
+- 📱 **Mobile-first** - Tailwind CSS is already configured
+
+### 🔍 **Debugging Current Issues:**
+
+```bash
+# Check current API response size
+curl -s http://localhost:8080/api/players | jq '.players | length'
+# Should return: 100 (⚠️ too many!)
+
+# Check for performance warning
+curl -s http://localhost:8080/api/players | jq '.warning'  
+# Should return: "⚠️ All players loaded at once - no pagination!"
+```
 
 ---
 
@@ -185,8 +227,9 @@ docker system prune -af
 ## 🚀 Ready to Start?
 
 1. `docker compose up -d` 
-2. Code for 5 hours
-3. Push to GitHub
-4. Share the repo link
+2. Identify the performance issues
+3. Fix pagination + React problems
+4. Push optimized code to GitHub
+5. Document your improvements
 
-**Good luck - show us what you can build! 💪**
+**Good luck - show us your optimization skills! 💪**
