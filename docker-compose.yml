@@ -6,6 +6,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - ./seed:/var/www/seed
     command: >
       sh -c "apk add --no-cache git sqlite && \
              curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \

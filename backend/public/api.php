@@ -23,17 +23,59 @@ if (isset($_GET['debug'])) {
     exit;
 }
 
-// Mock data
-$mockPlayers = [
-    ['id' => 1, 'name' => 'Lionel Messi', 'position' => 'Forward', 'created_at' => '2024-01-15'],
-    ['id' => 2, 'name' => 'Cristiano Ronaldo', 'position' => 'Forward', 'created_at' => '2024-01-10'],
-    ['id' => 3, 'name' => 'Kylian Mbappé', 'position' => 'Forward', 'created_at' => '2024-01-20'],
-    ['id' => 4, 'name' => 'Erling Haaland', 'position' => 'Forward', 'created_at' => '2024-01-12'],
-    ['id' => 5, 'name' => 'Neymar Jr', 'position' => 'Forward', 'created_at' => '2024-01-08'],
-    ['id' => 6, 'name' => 'Kevin De Bruyne', 'position' => 'Midfielder', 'created_at' => '2024-01-18'],
-    ['id' => 7, 'name' => 'Virgil van Dijk', 'position' => 'Defender', 'created_at' => '2024-01-14'],
-    ['id' => 8, 'name' => 'Sadio Mané', 'position' => 'Forward', 'created_at' => '2024-01-16'],
-];
+/**
+ * 🚫 BAD PRACTICE: Fetching ALL players without pagination
+ * This will cause performance issues with large datasets!
+ */
+function getAllPlayersFromDB($search = '') {
+    $dbPath = '/var/www/seed/hello.db';
+    
+    try {
+        $pdo = new PDO("sqlite:$dbPath");
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        // Build query with search but NO PAGINATION
+        $whereClause = '';
+        $params = [];
+        if ($search) {
+            $whereClause = 'WHERE name LIKE :search';
+            $params[':search'] = "%$search%";
+        }
+        
+        // Get total count
+        $countQuery = "SELECT COUNT(*) FROM players $whereClause";
+        $countStmt = $pdo->prepare($countQuery);
+        $countStmt->execute($params);
+        $total = $countStmt->fetchColumn();
+        
+        // 🚫 Get ALL results without LIMIT - intentionally bad!
+        $query = "SELECT * FROM players $whereClause ORDER BY id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'players' => $players,
+            'total' => $total,
+            'pagination' => null // No pagination info
+        ];
+        
+    } catch (PDOException $e) {
+        error_log("Database error: " . $e->getMessage());
+        // Fallback mock data if database fails
+        $mockPlayers = [
+            ['id' => 1, 'name' => 'Lionel Messi', 'position' => 'Forward', 'created_at' => '2024-01-15'],
+            ['id' => 2, 'name' => 'Cristiano Ronaldo', 'position' => 'Forward', 'created_at' => '2024-01-10'],
+            ['id' => 3, 'name' => 'Kylian Mbappé', 'position' => 'Forward', 'created_at' => '2024-01-20'],
+        ];
+        
+        return [
+            'players' => $mockPlayers,
+            'total' => count($mockPlayers),
+            'pagination' => null
+        ];
+    }
+}
 
 // Router
 switch (true) {
@@ -47,32 +89,16 @@ switch (true) {
         break;
 
     case $path === '/api/players':
-        $page = (int)($_GET['page'] ?? 1);
-        $perPage = min((int)($_GET['perPage'] ?? 10), 50);
         $search = $_GET['search'] ?? '';
 
-        // Apply search
-        $filteredPlayers = $mockPlayers;
-        if ($search) {
-            $filteredPlayers = array_filter($mockPlayers, function($player) use ($search) {
-                return stripos($player['name'], $search) !== false;
-            });
-        }
-
-        // Apply pagination
-        $total = count($filteredPlayers);
-        $offset = ($page - 1) * $perPage;
-        $players = array_slice($filteredPlayers, $offset, $perPage);
-
+        // 🚫 BAD: Ignoring pagination parameters completely
+        $result = getAllPlayersFromDB($search);
+        
         echo json_encode([
-            'players' => array_values($players),
-            'pagination' => [
-                'page' => $page,
-                'perPage' => $perPage,
-                'total' => $total,
-                'totalPages' => ceil($total / $perPage)
-            ],
-            'search' => $search
+            'players' => $result['players'],
+            'total' => $result['total'],
+            'search' => $search,
+            'warning' => '⚠️ All players loaded at once - no pagination!'
         ]);
         break;
 
