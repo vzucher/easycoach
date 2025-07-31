@@ -1,6 +1,9 @@
--- Example: you may adapt or replace with real migration files
 CREATE TABLE players (
-  id INT PRIMARY KEY,
-  name VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  position TEXT NOT NULL,
+  created_at TEXT NOT NULL
 );
+
+CREATE INDEX players_id_IDX ON players (id);
+CREATE INDEX players_name_IDX ON players (name);
