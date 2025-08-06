@@ -1,0 +1,35 @@
+
+.homepage-main {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 40px;
+}
+
+.homepage-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1f2937;
+}
+
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #f87171;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+
+.stats-loading h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.stats-loading p {
+  color: #6b7280;
+  font-style: italic;
+} 

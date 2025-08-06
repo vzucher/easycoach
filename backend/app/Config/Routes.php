@@ -35,13 +35,16 @@ $routes->get('/', 'Home::index');
 
 // API Routes for EasyCoach Challenge
 $routes->group('api', ['namespace' => 'App\Controllers'], function ($routes) {
-    // Players endpoints
+    // API info endpoint
+    $routes->get('/', 'ApiController::index');
+    
+    // Health check endpoint
+    $routes->get('health', 'ApiController::health');
+    
+    // Players endpoints - using PlayerController
     $routes->get('players', 'PlayerController::index');
     $routes->get('players/(:num)', 'PlayerController::show/$1');
     $routes->get('players/(:num)/sessions', 'PlayerController::sessions/$1');
-    
-    // Health check endpoint
-    $routes->get('health', 'PlayerController::health');
 });
 
 /*
